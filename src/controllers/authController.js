@@ -50,17 +50,18 @@ const verifyOTP = asyncHandler(async (req, res) => {
     // Verify the OTP using Descope
     const authInfo = await descopeClient.otp.verify.sms(phoneNumber, otp);
     
-    // For now, we return the session token and basic user info
-    // We will expand this with Firestore logic as we rebuild
+    console.log('Descope Verify Success:', authInfo);
+
     res.status(200).json({
       success: true,
-      sessionToken: authInfo.sessionToken.jwt,
-      user: authInfo.user
+      authInfo: authInfo // Send everything for debugging
     });
   } catch (error) {
-    console.error('Descope OTP Verify Error:', error);
-    res.status(401);
-    throw new Error('Invalid or expired OTP');
+    console.error('Descope OTP Verify Error Details:', error);
+    res.status(401).json({
+      success: false,
+      error: error.message || 'Invalid or expired OTP'
+    });
   }
 });
 
