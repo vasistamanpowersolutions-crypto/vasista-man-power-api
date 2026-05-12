@@ -29,8 +29,8 @@ app.use('/api/', limiter);
 app.use(morgan('dev'));
 
 // Body Parser
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Basic Route
 app.get('/', (req, res) => {
@@ -41,6 +41,9 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/collection', require('./routes/dataRoutes'));
+app.use('/api/candidates', require('./routes/candidateRoutes'));
+app.use('/api/businesses', require('./routes/businessRoutes'));
+app.use('/api/allotments', require('./routes/allotmentRoutes'));
 
 // Basic Health Check
 app.get('/', (req, res) => {
