@@ -128,8 +128,11 @@ const createCandidate = asyncHandler(async (req, res) => {
       updatedAt: new Date()
     };
 
+    console.log('Candidate Data to Save:', { ...candidateData, aadharFront: '...', aadharBack: '...', panCard: '...', profilePhoto: '...' });
+
     // Save to Firestore (now with URLs instead of large base64 strings)
     const docRef = await db.collection('candidates').add(candidateData);
+    console.log('Candidate saved successfully with ID:', docRef.id);
 
     res.status(201).json({
       id: docRef.id,
@@ -137,8 +140,13 @@ const createCandidate = asyncHandler(async (req, res) => {
       message: 'Candidate created successfully'
     });
   } catch (error) {
-    res.status(500);
-    throw new Error(`Error creating candidate: ${error.message}`);
+    console.error('CRITICAL ERROR in createCandidate:', error);
+    res.status(500).json({
+      error: {
+        message: `Error creating candidate: ${error.message}`,
+        stack: error.stack // Include stack trace for debugging
+      }
+    });
   }
 });
 

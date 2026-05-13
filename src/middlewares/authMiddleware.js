@@ -74,26 +74,43 @@ const protectAny = asyncHandler(async (req, res, next) => {
     token = req.headers.authorization.split(' ')[1];
   }
 
-  if (!token) {
+  if (!token || token === 'undefined' || token === 'null') {
     res.status(401);
-    throw new Error('Not authorized, no token provided');
+    throw new Error('Not authorized, invalid token format');
   }
 
   // Try Descope validation first (most common for website)
   try {
+    if (!descopeClient) {
+      throw new Error('Descope client not initialized');
+    }
     const authInfo = await descopeClient.validateSession(token);
     req.user = authInfo.token;
     return next();
   } catch (descopeErr) {
-    // If Descope fails, try Firebase (for Admin Panel real tokens)
+    const isDescopeExpired = descopeErr.message?.includes('JWTExpired');
+    
+    // If it's a Descope token and it's expired, don't confuse with Firebase errors
+    if (isDescopeExpired) {
+      res.status(401);
+      throw new Error('Your session has expired. Please log in again.');
+    }
+
+    // Try Firebase validation (for Admin Panel)
     try {
       const decodedToken = await auth.verifyIdToken(token);
       req.user = decodedToken;
       return next();
     } catch (firebaseErr) {
-      console.error('Auth Error (Any): Both Descope and Firebase failed');
+      // If BOTH failed, determine the most relevant error
       res.status(401);
-      throw new Error('Not authorized, token invalid');
+      
+      // If it looks like a Descope token (based on audience error in Firebase), show Descope error
+      if (firebaseErr.message?.includes('incorrect "aud"')) {
+        throw new Error(`Authentication failed: ${descopeErr.message}`);
+      }
+      
+      throw new Error('Not authorized: Invalid or expired token');
     }
   }
 });

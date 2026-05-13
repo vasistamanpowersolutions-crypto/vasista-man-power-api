@@ -7,10 +7,10 @@ const {
   updateCandidate,
   deleteCandidate
 } = require('../controllers/candidateController');
-const { protectAdmin } = require('../middlewares/authMiddleware');
+const { protectAny } = require('../middlewares/authMiddleware');
 
-// Apply admin authentication to all routes
-router.use(protectAdmin);
+// Apply authentication to all routes (allows Admin or Descope user)
+router.use(protectAny);
 
 // Get all candidates
 router.get('/', getAllCandidates);

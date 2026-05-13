@@ -8,6 +8,9 @@ const {
 } = require('../controllers/allotmentController');
 const { protectAdmin } = require('../middlewares/authMiddleware');
 
+// Public routes
+router.get('/user-allotments', getAllotmentsByFilter);
+
 router.use(protectAdmin);
 
 router.get('/', getAllAllotments);

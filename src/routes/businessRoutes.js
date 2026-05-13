@@ -7,9 +7,9 @@ const {
   updateBusiness,
   deleteBusiness
 } = require('../controllers/businessController');
-const { protectAdmin } = require('../middlewares/authMiddleware');
+const { protectAny } = require('../middlewares/authMiddleware');
 
-router.use(protectAdmin);
+router.use(protectAny);
 
 router.get('/', getAllBusinesses);
 router.get('/:id', getBusiness);
