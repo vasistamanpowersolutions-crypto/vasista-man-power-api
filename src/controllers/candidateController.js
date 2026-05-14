@@ -67,21 +67,23 @@ const createCandidate = asyncHandler(async (req, res) => {
     firstName,
     lastName,
     mobileNumber,
-    dateOfBirth,
+    type, // Part-time or Full-time
+    experienceLevel, // Fresher or Experienced
+    previousJobTitle,
+    experienceYears,
+    wantedJobTitle,
+    skills,
+    fatherName,
+    fatherMobileNumber,
+    address,
     city,
     state,
-    qualification,
-    experience,
-    skills,
     aadharNumber,
     aadharFront,
     aadharBack,
     panNumber,
     panCard,
-    profilePhoto,
-    emergencyContactName,
-    emergencyContactRelation,
-    emergencyContactMobile
+    profilePhoto
   } = req.body;
 
   // Validate required fields
@@ -107,22 +109,24 @@ const createCandidate = asyncHandler(async (req, res) => {
       firstName,
       lastName,
       mobileNumber,
-      dateOfBirth,
-      city,
-      state,
-      qualification: qualification || '',
-      experience: experience || '',
+      type: type || '',
+      experienceLevel: experienceLevel || '',
+      previousJobTitle: previousJobTitle || '',
+      experienceYears: experienceYears || '',
+      wantedJobTitle: wantedJobTitle || '',
       skills: skills || '',
-      aadharNumber,
+      fatherName: fatherName || '',
+      fatherMobileNumber: fatherMobileNumber || '',
+      address: address || '',
+      city: city || '',
+      state: state || '',
+      aadharNumber: aadharNumber || '',
       aadharFront: imageUrls.aadharFront || '',
       aadharBack: imageUrls.aadharBack || '',
-      panNumber,
+      panNumber: panNumber || '',
       panCard: imageUrls.panCard || '',
       profilePhoto: imageUrls.profilePhoto || '',
-      emergencyContactName,
-      emergencyContactRelation,
-      emergencyContactMobile,
-      candidateStatus: 'Available',
+      candidateStatus: 'Open to Work',
       kycStatus: 'Pending',
       createdAt: new Date(),
       updatedAt: new Date()
@@ -144,7 +148,7 @@ const createCandidate = asyncHandler(async (req, res) => {
     res.status(500).json({
       error: {
         message: `Error creating candidate: ${error.message}`,
-        stack: error.stack // Include stack trace for debugging
+        stack: error.stack
       }
     });
   }
@@ -157,6 +161,11 @@ const createCandidate = asyncHandler(async (req, res) => {
 const updateCandidate = asyncHandler(async (req, res) => {
   const { id } = req.params;
   
+  if (!id || id === 'undefined' || id === 'null') {
+    res.status(400);
+    throw new Error('Invalid candidate ID provided');
+  }
+
   try {
     const doc = await db.collection('candidates').doc(id).get();
     
@@ -173,15 +182,17 @@ const updateCandidate = asyncHandler(async (req, res) => {
       updatedAt: new Date()
     };
 
+    // Only process images that are actually base64 strings (not existing URLs)
+    const imagesToProcess = {};
+    if (aadharFront && aadharFront.startsWith('data:image')) imagesToProcess.aadharFront = aadharFront;
+    if (aadharBack && aadharBack.startsWith('data:image')) imagesToProcess.aadharBack = aadharBack;
+    if (panCard && panCard.startsWith('data:image')) imagesToProcess.panCard = panCard;
+    if (profilePhoto && profilePhoto.startsWith('data:image')) imagesToProcess.profilePhoto = profilePhoto;
+
     // If images are provided, compress and upload them
-    if (aadharFront || aadharBack || panCard || profilePhoto) {
+    if (Object.keys(imagesToProcess).length > 0) {
       console.log('Processing and uploading updated images...');
-      const imageUrls = await processMultipleImages({
-        aadharFront,
-        aadharBack,
-        panCard,
-        profilePhoto
-      });
+      const imageUrls = await processMultipleImages(imagesToProcess);
 
       updateData = {
         ...updateData,
@@ -199,6 +210,7 @@ const updateCandidate = asyncHandler(async (req, res) => {
       message: 'Candidate updated successfully'
     });
   } catch (error) {
+    console.error('ERROR in updateCandidate:', error);
     res.status(500);
     throw new Error(`Error updating candidate: ${error.message}`);
   }

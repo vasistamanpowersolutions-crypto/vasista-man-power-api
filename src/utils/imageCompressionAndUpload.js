@@ -13,11 +13,15 @@ const compressImage = async (base64String, imageName = 'image') => {
       throw new Error('No image data provided');
     }
 
+    console.log(`Compressing image: ${imageName}, input length: ${base64String.length}`);
+
     // Remove data URI prefix if present
     const cleanBase64 = base64String.replace(/^data:image\/\w+;base64,/, '');
     
     // Convert base64 to buffer
     const imageBuffer = Buffer.from(cleanBase64, 'base64');
+
+    console.log(`Buffer size: ${imageBuffer.length} bytes`);
 
     // Compress with sharp - target ~60KB
     const compressedBuffer = await sharp(imageBuffer)
@@ -34,8 +38,10 @@ const compressImage = async (base64String, imageName = 'image') => {
       })
       .toBuffer();
 
+    console.log(`Compressed buffer size: ${compressedBuffer.length} bytes`);
     return compressedBuffer;
   } catch (error) {
+    console.error('Image compression error:', error);
     throw new Error(`Image compression failed: ${error.message}`);
   }
 };
