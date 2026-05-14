@@ -39,7 +39,8 @@ const getBusiness = asyncHandler(async (req, res) => {
 const createBusiness = asyncHandler(async (req, res) => {
   const { 
     businessName, ownerName, mobileNumber, email, 
-    address, docType, docImageUrl, businessFrontUrl 
+    address, city, state, docType, docImageUrl, businessFrontUrl,
+    wantedJobRoles 
   } = req.body;
 
   if (!businessName || !ownerName || !mobileNumber) {
@@ -66,6 +67,9 @@ const createBusiness = asyncHandler(async (req, res) => {
       mobileNumber,
       email: email || '',
       address: address || '',
+      city: city || '',
+      state: state || '',
+      wantedJobRoles: wantedJobRoles || '',
       docType,
       docImageUrl: processedDocUrl || '',
       businessFrontUrl: processedFrontUrl || '',
